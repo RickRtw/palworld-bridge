@@ -114,9 +114,12 @@ def _apply_deltas_to_list(status_list_values: list, deltas: dict) -> dict:
 
 
 def apply_title(world_dir: str, player_id: str, title: dict, do_backup: bool = True,
-                show_on_name: bool = True) -> dict:
+                show_on_name: bool = False) -> dict:
     """Aplica o buff de um titulo ao personagem (edita Level.sav). Servidor PARADO.
-    Se show_on_name, tambem exibe o titulo no NickName ('POOT «Titulo»').
+    show_on_name (default OFF): anexa o titulo ao NickName ('POOT «Titulo»'). REJEITADO
+    pelo usuario — o nome e' editavel pelo jogador, entao nao e' um titulo "de verdade".
+    O prestigio do titulo fica no painel web do grid; o buff e' a manifestacao in-game.
+    Display in-game travado = nameplate mod (futuro, ver memoria palworld-ue4ss-modding).
     Retorna relatorio {applied, ignored, display}."""
     deltas, ignored = title_to_point_deltas(title)
     if do_backup:
