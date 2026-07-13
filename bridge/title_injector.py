@@ -52,6 +52,38 @@ def title_to_point_deltas(title: dict) -> tuple[dict, list]:
     return deltas, ignored
 
 
+TITLE_OPEN = " «"   # delimitadores do titulo no nome exibido
+TITLE_CLOSE = "»"
+
+
+def _base_nick(nick: str) -> str:
+    """Remove um titulo previamente anexado ( 'POOT «Titulo»' -> 'POOT' )."""
+    if TITLE_OPEN in nick and nick.rstrip().endswith(TITLE_CLOSE):
+        return nick.split(TITLE_OPEN)[0].rstrip()
+    return nick
+
+
+def set_title_display(world_dir: str, player_id: str, title_name: str | None,
+                      do_backup: bool = False) -> dict:
+    """Mostra o titulo no personagem via NickName: 'POOT «Titulo»'.
+    title_name=None remove o titulo do nome. Servidor PARADO. (Palworld nao tem
+    campo de titulo editavel; o nome e' o caminho confiavel e visivel.)"""
+    if do_backup:
+        backup_world(world_dir, tag="title_display")
+    gp = load_gvas(player_save_path(world_dir, player_id))
+    instance_id = str(gp.properties["SaveData"]["value"]["IndividualId"]["value"]["InstanceId"]["value"])
+    g = load_gvas(level_save_path(world_dir))
+    sp = _find_player_sp(g, instance_id)
+    if sp is None or "NickName" not in sp:
+        raise ValueError("NickName do personagem nao encontrado")
+    cur = sp["NickName"]["value"]
+    base = _base_nick(cur)
+    new = base if not title_name else f"{base}{TITLE_OPEN}{title_name}{TITLE_CLOSE}"
+    sp["NickName"]["value"] = new
+    write_gvas(g, level_save_path(world_dir))
+    return {"before": cur, "after": new}
+
+
 def _find_player_sp(level_gvas, instance_id: str):
     w = level_gvas.properties["worldSaveData"]["value"]
     for e in w["CharacterSaveParameterMap"]["value"]:
@@ -81,9 +113,11 @@ def _apply_deltas_to_list(status_list_values: list, deltas: dict) -> dict:
     return report
 
 
-def apply_title(world_dir: str, player_id: str, title: dict, do_backup: bool = True) -> dict:
+def apply_title(world_dir: str, player_id: str, title: dict, do_backup: bool = True,
+                show_on_name: bool = True) -> dict:
     """Aplica o buff de um titulo ao personagem (edita Level.sav). Servidor PARADO.
-    Retorna relatorio {applied: {stat: (antes,depois)}, ignored: [...]}."""
+    Se show_on_name, tambem exibe o titulo no NickName ('POOT «Titulo»').
+    Retorna relatorio {applied, ignored, display}."""
     deltas, ignored = title_to_point_deltas(title)
     if do_backup:
         backup_world(world_dir, tag="title")
@@ -98,7 +132,16 @@ def apply_title(world_dir: str, player_id: str, title: dict, do_backup: bool = T
 
     status_list = sp["GotStatusPointList"]["value"]["values"]
     report = _apply_deltas_to_list(status_list, deltas)
+
+    display = None
+    if show_on_name and "NickName" in sp:
+        base = _base_nick(sp["NickName"]["value"])
+        tname = title.get("name")
+        new = f"{base}{TITLE_OPEN}{tname}{TITLE_CLOSE}" if tname else base
+        display = {"before": sp["NickName"]["value"], "after": new}
+        sp["NickName"]["value"] = new
+
     write_gvas(g, level_save_path(world_dir))
 
     return {"title": title.get("name"), "applied": report, "ignored": ignored,
-            "deltas": deltas}
+            "deltas": deltas, "display": display}
