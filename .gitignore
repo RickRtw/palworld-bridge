@@ -1,7 +1,8 @@
-# --- SEGREDOS (nunca commitar) ---
+# --- SEGREDOS / ferramentas de admin (nunca commitar) ---
 .central_secrets
 .token
 config.json
+copiar_token.bat
 
 # --- ambiente / gerados ---
 out/
