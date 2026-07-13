@@ -32,7 +32,8 @@ ELEMENTS = ["Fogo", "Gelo", "Raio", "Sombra", "Dragao", "Agua", "Terra", "Planta
 
 
 def rng(seed=None):
-    return random.Random(seed if seed is not None else time.time_ns())
+    # sem seed: mistura tempo + entropia do OS pra nunca colidir em cunhagens no mesmo ns
+    return random.Random(seed if seed is not None else (time.time_ns() ^ uuid.uuid4().int))
 
 
 def roll_rarity(r, floor=None):

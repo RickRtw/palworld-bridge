@@ -13,8 +13,22 @@ um ID único rastreável que entra na economia anti-duplicação.
 | `equipment` | armas/armaduras/acessórios com afixos | `equipment_generator.py` |
 | `pal` | Pal único (variante + classe única) | `pal_generator.py` |
 | `class` | classe/arquétipo único (título + viés de stats) | `pal_generator.py` |
+| `title` | títulos com buffs/debuffs (comum→único + maldição), obtenção e requisitos | `title_generator.py` |
+| `map` | config de mapa por feudo (fatia limitada: spawns/recursos/Pals/dificuldade) | `map_generator.py` |
 
 Base compartilhada (raridade, nomes, IDs): `common.py`.
+
+### Títulos (buffs/debuffs)
+Raridades: comum, raro, épico, lendário, único, **maldição**. Buffs escalam com a
+raridade (+2% comum → +16% único). Maldições dão um buff pequeno mas debuff pesado
+(risco/recompensa). Cada título tem `acquisition_method` (matar boss, guerra de
+clãs, PvP, explorar, sobreviver...) e `requirements` (condições de conquista).
+
+### Mapas por feudo
+Cada feudo é uma **fatia limitada** do mapa: região/bioma, teto de nível local,
+Pals capturáveis e recursos restritos, **0 bosses/dungeons locais**. Reforça a
+regra: o feudo trava o progresso → obriga a ir ao Central. Emite `server_opts`
+(subset de PalWorldSettings) + `limits` (regras do mod).
 
 ## A Forja (`forge.py`) — ponto único, ligável
 

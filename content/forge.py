@@ -17,6 +17,8 @@ from .boss_generator import generate_boss
 from .item_generator import generate_item
 from .equipment_generator import generate_equipment
 from .pal_generator import generate_pal, generate_class
+from .title_generator import generate_title
+from .map_generator import generate_map
 
 HERE = Path(__file__).parent
 FLAGS_FILE = HERE / "content_flags.json"
@@ -28,6 +30,8 @@ REGISTRY = {
     "equipment": {"fn": generate_equipment, "enabled": True},
     "pal":       {"fn": generate_pal,       "enabled": True},
     "class":     {"fn": generate_class,     "enabled": True},
+    "title":     {"fn": generate_title,     "enabled": True},
+    "map":       {"fn": generate_map,       "enabled": True},
 }
 
 
