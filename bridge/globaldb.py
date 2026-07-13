@@ -89,6 +89,13 @@ class GlobalDB:
             entity_type TEXT, entity_id TEXT,
             from_server TEXT, to_server TEXT, ts REAL
         );
+        -- titulos concedidos pela Central (buffs aplicados no save pelo bridge).
+        CREATE TABLE IF NOT EXISTS granted_titles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            player_uid TEXT, title_name TEXT, rarity TEXT,
+            title_json TEXT, granted_by TEXT,
+            applied INTEGER DEFAULT 0, granted_at REAL
+        );
         -- rastreia CADA instancia fisica de um Pal num servidor.
         -- 'active' = existe legitimamente ali; 'retired' = ja saiu (viajou).
         -- Uma (server, instance_id) 'retired' que reaparece = tentativa de dupe.
@@ -216,6 +223,33 @@ class GlobalDB:
         rows = self.db.execute(
             "SELECT global_pal_id,character_id,current_instance_id FROM pals"
             " WHERE owner_uid=? AND custodian_server=? AND active=1", (owner_uid, server)).fetchall()
+        return [dict(r) for r in rows]
+
+    # ---- títulos (concessão pela Central) ----
+    def grant_title(self, player_uid: str, title: dict, server: str) -> int:
+        cur = self.db.execute(
+            "INSERT INTO granted_titles(player_uid,title_name,rarity,title_json,granted_by,applied,granted_at)"
+            " VALUES(?,?,?,?,?,0,?)",
+            (player_uid, title.get("name"), title.get("rarity"),
+             serialize_node(title).decode("utf-8"), server, time.time()))
+        self.db.commit()
+        return cur.lastrowid
+
+    def pending_titles(self, player_uid: str) -> list[dict]:
+        rows = self.db.execute(
+            "SELECT id,title_name,title_json FROM granted_titles"
+            " WHERE player_uid=? AND applied=0", (player_uid,)).fetchall()
+        return [{"id": r["id"], "name": r["title_name"],
+                 "title": deserialize_node(r["title_json"].encode("utf-8"))} for r in rows]
+
+    def mark_title_applied(self, title_id: int):
+        self.db.execute("UPDATE granted_titles SET applied=1 WHERE id=?", (title_id,))
+        self.db.commit()
+
+    def player_titles(self, player_uid: str) -> list[dict]:
+        rows = self.db.execute(
+            "SELECT title_name,rarity,applied FROM granted_titles WHERE player_uid=?",
+            (player_uid,)).fetchall()
         return [dict(r) for r in rows]
 
     def stats(self) -> dict:
