@@ -85,6 +85,7 @@ def generate_boss(seed=None, tier=3, server_id=None) -> dict:
     fingerprint = hashlib.sha1(f"{boss_id}{base}{name}".encode()).hexdigest()[:12]
 
     return {
+        "type": "boss",
         "boss_id": boss_id,
         "fingerprint": fingerprint,
         "name": name,

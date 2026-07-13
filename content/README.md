@@ -1,8 +1,41 @@
-# Gerador de Conteúdo — Bosses únicos
+# Forja de Conteúdo — geradores únicos
 
-Cunha bosses únicos **sem modelagem 3D**: varia parâmetros de Pals que já existem
-no jogo (espécie-base, escala, stats, moveset, passivas, drops, nome) e dá a cada
-boss um ID único rastreável.
+Cunha conteúdo único **sem modelagem 3D**: varia o que o jogo já tem (IDs reais do
+Palworld) por parâmetros — stats, raridade, nome, classe, afixos. Cada peça ganha
+um ID único rastreável que entra na economia anti-duplicação.
+
+## Tipos (todos gerados e testados)
+
+| Tipo | Gera | Arquivo |
+|---|---|---|
+| `boss` | boss único (Pal-base + escala/stats/drops/nome) | `boss_generator.py` |
+| `item` | itens únicos (consumível/material/relíquia) | `item_generator.py` |
+| `equipment` | armas/armaduras/acessórios com afixos | `equipment_generator.py` |
+| `pal` | Pal único (variante + classe única) | `pal_generator.py` |
+| `class` | classe/arquétipo único (título + viés de stats) | `pal_generator.py` |
+
+Base compartilhada (raridade, nomes, IDs): `common.py`.
+
+## A Forja (`forge.py`) — ponto único, ligável
+
+```bash
+python -m content.forge --list            # catálogo + o que está ligado
+python -m content.forge boss --tier 5     # cunha 1 boss tier 5
+python -m content.forge equipment -n 3    # cunha 3 equipamentos
+python -m content.forge --disable pal     # desliga um tipo
+python -m content.forge --enable pal      # religa
+```
+
+Ligar/desligar cada tipo é só uma flag em `content_flags.json` — feito pra ser
+"ativado facilmente depois". A cunhagem de um tipo desligado é bloqueada.
+
+## Economia (cunhar → rastrear)
+
+`forge.mint_and_register(kind, central_client, owner_uid, server_id, ...)` cunha e
+JÁ registra na Central (só o que é raridade `raro`+ entra no ledger global).
+Testado ao vivo: boss + 2 equipamentos → `legendary_items` subiu pra 3.
+
+## Boss no jogo (o único ponto que precisa de ajuste na máquina)
 
 ## O que está PRONTO e validado (lado servidor/Python)
 
