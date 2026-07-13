@@ -4,15 +4,20 @@ Bridge "espião/ponte" que roda ao lado do Palworld Dedicated Server.
 Sincroniza o estado dos players (inventário, Pals, atributos) com a
 **Autoridade Central** do grid federado de Palworld.
 
-## 🚀 Instalação num feudo (1 clique)
+## 🚀 Instalação num feudo (1 clique, do zero)
 
-Baixe e rode o **`setup_feudo.bat`** — ele instala tudo, detecta seu mundo,
-liga a REST/RCON, pergunta o nome do feudo/senha/token e registra na Central.
-Passo a passo: **[FEUDO_SETUP.md](FEUDO_SETUP.md)**.
+Baixe e rode o **`setup_feudo.bat`** — ele instala **tudo do zero**: Python, Git,
+o **Palworld Dedicated Server** (via SteamCMD), configura, sobe o servidor e
+registra o feudo na Central. Passo a passo: **[FEUDO_SETUP.md](FEUDO_SETUP.md)**.
 
-> Só precisa de **Python 3.10+** instalado (o resto o .bat resolve).
-> A comunicação é **outbound** (feudo → VPS pública): funciona atrás de NAT
-> residencial / Radmin VPN sem abrir porta.
+> Não precisa ter NADA instalado. A comunicação com a Central é **outbound**
+> (feudo → VPS pública): funciona atrás de NAT residencial / Radmin VPN sem
+> abrir porta.
+
+### Componentes do instalador
+- `setup_feudo.bat` — bootstrap (Python, Git, repo, venv, deps) → chama o instalador
+- `feudo_installer.py` — instala o servidor (SteamCMD), configura, sobe e registra
+- `bridge/server_config.py` — gera o `PalWorldSettings.ini` (config-driven; base p/ mods futuros)
 
 ## Arquitetura (M1)
 

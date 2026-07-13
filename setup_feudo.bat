@@ -70,24 +70,7 @@ if exist "%SELFDIR%bridge\central_client.py" (
 )
 cd /d "%APPDIR%"
 
-REM ---------- 4. Perguntas ----------
-echo.
-echo ------------------------------------------------------------
-echo    CONFIGURACAO DO SEU FEUDO
-echo ------------------------------------------------------------
-set "SERVERID="
-set /p SERVERID=ID unico do feudo (ex: feudo_mizu):
-set "OWNER="
-set /p OWNER=Nome do seu cla:
-set "TOKEN="
-set /p TOKEN=Token da API central (peca ao admin):
-set "SRVFOLDER="
-set /p SRVFOLDER=Pasta do servidor Palworld [Enter = autodetectar]:
-
-if "%SERVERID%"=="" ( echo [ERRO] ID do feudo obrigatorio. & pause & exit /b 1 )
-if "%TOKEN%"=="" ( echo [ERRO] Token obrigatorio. & pause & exit /b 1 )
-
-REM ---------- 5. Ambiente + dependencias ----------
+REM ---------- 4. Ambiente + dependencias ----------
 echo.
 echo [..] Criando ambiente virtual e instalando dependencias...
 echo      (a primeira vez pode demorar alguns minutos)
@@ -100,36 +83,13 @@ python -m pip install -q --no-deps "git+https://github.com/oMaN-Rod/palworld-sav
 if errorlevel 1 ( echo [ERRO] Falha ao instalar o parser 1.0. & pause & exit /b 1 )
 echo [OK] Dependencias instaladas.
 
-REM ---------- 6. Token no ambiente (sessao + persistente + arquivo) ----------
-set "CENTRAL_API_TOKEN=%TOKEN%"
-setx CENTRAL_API_TOKEN "%TOKEN%" >nul
-> ".token" echo %TOKEN%
+REM ---------- 5. Instalador completo (servidor + config + grid) ----------
+echo.
+echo [..] Iniciando o instalador do feudo...
+echo      (vai baixar o Palworld Dedicated Server via SteamCMD - VARIOS GB)
+echo.
+python feudo_installer.py
+if errorlevel 1 ( echo [ERRO] O instalador do feudo falhou. Veja as mensagens acima. & pause & exit /b 1 )
 
-REM ---------- 7. Configurar (detecta mundo, le ini, liga REST/RCON) ----------
-echo.
-echo [..] Detectando o mundo e escrevendo config.json...
-if "%SRVFOLDER%"=="" (
-  python configure.py --server-id "%SERVERID%" --owner "%OWNER%"
-) else (
-  python configure.py --server-folder "%SRVFOLDER%" --server-id "%SERVERID%" --owner "%OWNER%"
-)
-if errorlevel 1 ( echo [ERRO] Configuracao falhou. Veja as mensagens acima. & pause & exit /b 1 )
-
-REM ---------- 8. Registrar no grid + status ----------
-echo.
-echo [..] Registrando o feudo na Central...
-python feudo_cli.py register
-python feudo_cli.py stats
-
-echo.
-echo ============================================================
-echo    SETUP CONCLUIDO!
-echo.
-echo    Se o setup avisou p/ REINICIAR o servidor Palworld, faca isso.
-echo.
-echo    Para sincronizar um jogador (no logout dele):
-echo       python feudo_cli.py sync ^<PLAYER_UID^>
-echo    O PLAYER_UID e o nome do arquivo em Players\ (sem .sav)
-echo ============================================================
 echo.
 pause

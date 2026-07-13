@@ -2,31 +2,30 @@
 
 Guia pra plugar uma NOVA máquina no grid. A API Central já está no ar.
 
-## Pré-requisito único
+## Pré-requisitos
 
-- **Python 3.10+** instalado (em https://www.python.org/downloads/, marque
-  **"Add Python to PATH"**). O resto o `.bat` resolve sozinho (git, libs, config).
+**Nenhum além de uma máquina Windows com internet.** O `.bat` instala tudo —
+incluindo o Python e o próprio Servidor Dedicado de Palworld (via SteamCMD).
 
-O **Servidor Dedicado de Palworld** precisa já ter rodado ao menos uma vez
-(pra existir o save). O `.bat` liga REST/RCON automaticamente se preciso.
+> Reserve espaço em disco (o servidor baixa vários GB) e uma boa conexão.
 
-## Passo a passo
+## Passo a passo (tudo automático)
 
 1. **Baixe o instalador** (1 arquivo):
    https://raw.githubusercontent.com/RickRtw/palworld-bridge/main/setup_feudo.bat
    (abra o link, `Ctrl+S`, salve como `setup_feudo.bat` numa pasta qualquer)
 
-2. **Dê 2 cliques** no `setup_feudo.bat`. Ele vai:
-   - checar Python e instalar o Git (via winget) se faltar
-   - baixar o bridge do GitHub
-   - criar o ambiente e instalar as dependências
-   - **perguntar**: ID do feudo, nome do clã, **token da API** e (opcional) a
-     pasta do servidor Palworld
-   - detectar seu mundo, ligar REST/RCON, escrever a config
-   - **registrar seu feudo na Central** e mostrar o status
+2. **Dê 2 cliques** no `setup_feudo.bat`. Ele vai, em ordem:
+   - instalar **Python 3.12** e **Git** se faltarem
+   - baixar o bridge do GitHub e instalar as dependências
+   - **perguntar os dados**: pasta de instalação, nome do servidor, senha de
+     admin, senha de entrada, porta, máx. de players, ID do feudo, clã e token
+   - baixar e instalar o **Palworld Dedicated Server** (SteamCMD) — vários GB
+   - escrever o `PalWorldSettings.ini` (com REST/RCON ligados)
+   - **subir o servidor** e esperar o mundo ser criado
+   - escrever a config do bridge e **registrar o feudo na Central**
 
-3. Se ele avisar pra **reiniciar o servidor Palworld**, reinicie (só na 1ª vez,
-   quando liga a REST/RCON).
+3. Pronto — servidor no ar e no grid. Nada manual.
 
 ## O token
 
