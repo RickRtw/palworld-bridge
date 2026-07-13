@@ -33,6 +33,34 @@ def boss_row_name(base_pal: str) -> str:
     return "Boss_" + core
 
 
+# idiomas a gerar (o jogo usa a linguagem do sistema; pt-BR e o alvo, en de fallback).
+# APRENDIZADO: traducao SO aplica se estiver na pasta do idioma ativo do jogo.
+LANGS = ["pt-BR", "en"]
+
+
+def write_item_names(root: Path, item_name_map: dict):
+    """Renomeia itens (chave = ITEM_NAME_<ItemId>) em TODOS os idiomas de LANGS.
+    Requer PalSchema >= 0.6.0. Verificavel abrindo o inventario."""
+    payload = {"DT_ItemNameText": {f"ITEM_NAME_{iid}": name
+                                   for iid, name in item_name_map.items()}}
+    for lang in LANGS:
+        d = root / "translations" / lang
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "grid_names.json").write_text(
+            json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def write_pal_names(root: Path, pal_name_map: dict):
+    """Renomeia Pals (chave = PAL_NAME_<PalId>) em todos os idiomas."""
+    payload = {"DT_PalNameText": {f"PAL_NAME_{pid}": name
+                                  for pid, name in pal_name_map.items()}}
+    for lang in LANGS:
+        d = root / "translations" / lang
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "grid_pal_names.json").write_text(
+            json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
 def export_boss(boss: dict, out_dir: str | Path, mod_name: str | None = None) -> Path:
     mod_name = mod_name or ("GridBoss_" + boss["fingerprint"])
     root = Path(out_dir) / mod_name
@@ -52,6 +80,10 @@ def export_boss(boss: dict, out_dir: str | Path, mod_name: str | None = None) ->
     table_edit = {"DT_PalMonsterParameter": {row: dict(stats)}}
     (root / "raw" / "boss_stats.json").write_text(
         json.dumps(table_edit, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    # nome unico do boss (pt-BR + en), visivel no jogo
+    core = boss["base_pal"].replace("BOSS_", "").replace("Boss_", "")
+    write_pal_names(root, {core: boss["name"], row: boss["name"]})
 
     return root
 
