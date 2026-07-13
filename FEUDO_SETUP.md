@@ -27,6 +27,19 @@ incluindo o Python e o próprio Servidor Dedicado de Palworld (via SteamCMD).
 
 3. Pronto — servidor no ar e no grid. Nada manual.
 
+### Modo de teste rápido (`--dry-run`)
+
+Pra validar a lógica **sem** baixar os ~8GB do servidor (útil no 1º teste):
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python feudo_installer.py --dry-run
+```
+Ele pergunta os dados, **gera o PalWorldSettings.ini** de teste, pula o
+download/boot, grava `config.dryrun.json` (não mexe no config real) e testa o
+**registro na Central**. Se isso passar, o fluxo real (sem `--dry-run`) só
+adiciona o download do servidor.
+
 ## O token
 
 Peça o **token da API** ao admin (POOT). Ele está no arquivo

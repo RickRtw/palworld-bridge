@@ -10,6 +10,7 @@ __pycache__/
 *.pyc
 .venv/
 *.db
+config.dryrun.json
 
 # --- artefatos de teste/simulacao ---
 sim/
