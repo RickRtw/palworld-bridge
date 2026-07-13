@@ -1,48 +1,46 @@
--- GridBossSpawner — mod UE4SS que spawna o BOSS UNICO gerado.
---
--- IMPORTANTE (honestidade): a ESTRUTURA e o fluxo abaixo estao prontos, mas as
--- chamadas exatas de API do jogo (spawn, set de stats/escala) MUDAM entre versoes
--- do Palworld e do UE4SS. Os pontos marcados [AJUSTAR NO JOGO] precisam ser
--- confirmados/ajustados com o jogo aberto e o log do UE4SS aberto. Isso NAO da
--- pra validar sem o jogo rodando.
---
--- Comando in-game (chat de admin): /spawnboss
+-- GridBossSpawner — FASE 5: spawn via CONSOLE COMMAND (contexto correto).
+-- Chamar a UFunction crua crasha (ponteiro nulo). ConsoleCommand roteia o cheat
+-- pelo caminho oficial do jogo, com o contexto montado. Muito mais seguro.
+-- F5 = spawna BlueDragon nv5 (CONTROLE seguro). F6 = boss. F4 = contar.
 
-local boss = require("boss_def")   -- def gerada por boss_generator.py
+local boss = require("boss_def")
+local function log(m) print("[GridBoss] " .. tostring(m)) end
+local BOSS_KEY = (boss.base_pal:gsub("^BOSS_", ""))
+log("carregado. boss key=" .. BOSS_KEY)
 
-local function log(msg)
-    print("[GridBossSpawner] " .. tostring(msg))
+local function count_pals(tag)
+    local ok, arr = pcall(function() return FindAllOf("PalCharacter") end)
+    local n = (ok and arr) and #arr or 0
+    log(tag .. ": pals = " .. n); return n
 end
 
-log("carregado. boss alvo: " .. boss.name .. " (" .. boss.base_pal .. ") lvl " .. boss.level)
-
--- Spawna o boss perto de uma localizacao (x,y,z).
-local function spawn_boss(x, y, z)
-    log(("spawnando %s em (%d, %d, %d)"):format(boss.name, x, y, z))
-
-    -- [AJUSTAR NO JOGO] obter o mundo/PlayerController e chamar o spawner do Pal.
-    -- Ex. de padrao usado pelos mods de "custom pal spawner": localizar a funcao
-    -- de spawn do PalGameManager / PalCharacterSpawnParameter e passar:
-    --   CharacterID = boss.base_pal, Level = boss.level, Rank = 4 (boss)
-    -- Apos spawnar, aplicar:
-    --   escala do ator     -> boss.scale
-    --   HP/ATK multiplier   -> boss.hp_multiplier / boss.attack_multiplier
-    --   moveset             -> boss.moves
-    --   passivas            -> boss.passives
-    --   drops               -> boss.drops
-    -- Essas setas dependem das classes expostas pelo UE4SS na sua versao.
-
-    log("stub de spawn executado (ver marcacoes [AJUSTAR NO JOGO]).")
+local function run_cmd(cmd, tag)
+    log("====== CMD " .. tag .. ": '" .. cmd .. "' ======")
+    local ctrl = FindFirstOf("PalPlayerController")
+    if not ctrl or not ctrl:IsValid() then log("sem controller"); return end
+    count_pals("ANTES")
+    local scheduled = pcall(function()
+        ExecuteInGameThread(function()
+            local ok, err = pcall(function() ctrl:ConsoleCommand(cmd, true) end)
+            if not ok then
+                -- alguns builds usam 1 argumento so
+                ok, err = pcall(function() ctrl:ConsoleCommand(cmd) end)
+            end
+            log(ok and "ConsoleCommand executado" or ("ERRO: " .. tostring(err)))
+        end)
+    end)
+    if not scheduled then log("ExecuteInGameThread indisponivel") end
+    pcall(function()
+        ExecuteWithDelay(3000, function()
+            count_pals("DEPOIS")
+            log("== se DEPOIS > ANTES, SPAWNOU! ==")
+        end)
+    end)
 end
 
--- Registra o comando de chat /spawnboss (admin).
--- [AJUSTAR NO JOGO] o hook de chat depende do mod-base (ex: Paled / Server-Essentials).
-RegisterConsoleCommandHandler and RegisterConsoleCommandHandler("spawnboss", function()
-    spawn_boss(0, 0, 0)
-    return true
-end)
-
--- Hotkey de teste (opcional): F8 spawna o boss na origem.
-RegisterKeyBind and RegisterKeyBind(Key.F8, function()
-    spawn_boss(0, 0, 0)
+pcall(function()
+    RegisterKeyBind(Key.F5, function() run_cmd("SpawnMonster BlueDragon 5", "CONTROLE") end)
+    RegisterKeyBind(Key.F6, function() run_cmd("SpawnMonster " .. BOSS_KEY .. " " .. boss.level, "BOSS") end)
+    RegisterKeyBind(Key.F4, function() count_pals("MANUAL") end)
+    log("hotkeys: F5=BlueDragon nv5 (seguro), F6=boss, F4=contar.")
 end)
