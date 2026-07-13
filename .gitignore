@@ -19,3 +19,4 @@ m4_test/
 roundtrip_test/
 baseline_*.json
 out_test_*.json
+content/*.generated.json
