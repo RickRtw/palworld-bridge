@@ -1,0 +1,19 @@
+# --- SEGREDOS (nunca commitar) ---
+.central_secrets
+.token
+config.json
+
+# --- ambiente / gerados ---
+out/
+__pycache__/
+*.pyc
+.venv/
+*.db
+
+# --- artefatos de teste/simulacao ---
+sim/
+inject_test/
+m4_test/
+roundtrip_test/
+baseline_*.json
+out_test_*.json

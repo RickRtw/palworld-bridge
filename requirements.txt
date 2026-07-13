@@ -1,0 +1,7 @@
+requests>=2.31.0
+loguru>=0.7.3
+pyooz==0.0.8            # fornece o modulo `ooz` (descompressor Oodle prebuilt, sem compilador)
+
+# ATENCAO: o parser precisa do FORK 1.0-ready (o PyPI oficial 0.24.0 nao le saves 1.0).
+# Instale SEM deps pra nao tentar compilar o pyooz do fork (usamos o pyooz prebuilt acima):
+#   pip install --no-deps "git+https://github.com/oMaN-Rod/palworld-save-tools.git@main"

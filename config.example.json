@@ -1,0 +1,25 @@
+{
+  "rest_api": {
+    "base_url": "http://127.0.0.1:8212",
+    "username": "admin",
+    "password": "PREENCHIDO_PELO_SETUP"
+  },
+  "save": {
+    "world_dir": "PREENCHIDO_PELO_SETUP",
+    "wait_after_save_secs": 20
+  },
+  "poll": {
+    "interval_secs": 5
+  },
+  "sink": {
+    "mode": "file",
+    "file_dir": "./out",
+    "http_url": ""
+  },
+  "central": {
+    "base_url": "http://d11k35y3n9lwh44dsticgbgu.178.18.251.2.sslip.io",
+    "server_id": "PREENCHIDO_PELO_SETUP",
+    "owner": "PREENCHIDO_PELO_SETUP",
+    "token_env": "CENTRAL_API_TOKEN"
+  }
+}
