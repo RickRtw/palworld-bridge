@@ -14,6 +14,7 @@ from .savreader import load_gvas, write_gvas
 from .saver import player_save_path, level_save_path
 from .extractor import extract_player_state, INVENTORY_CONTAINERS, _uuid, _v
 from .injector import inject_pal, backup_world
+from .title_injector import apply_title
 from .central_client import CentralClient
 
 
@@ -93,6 +94,27 @@ def build_sync_payload(world_dir: str, player_id: str, server_id: str, strict: b
 def sync_to_central(client: CentralClient, world_dir: str, player_id: str, server_id: str) -> dict:
     """Logout: extrai o estado e envia pro Central."""
     return client.sync(build_sync_payload(world_dir, player_id, server_id))
+
+
+def apply_pending_titles(client: CentralClient, world_dir: str, player_id: str) -> dict:
+    """Aplica os títulos concedidos pela Central no save do player (buff + nome).
+    ATENÇÃO: servidor Palworld deve estar PARADO (edita Level.sav). Faz backup.
+    Fluxo: busca pendentes -> apply_title -> confirma na Central."""
+    pending = client.pending_titles(player_id)
+    if not pending:
+        return {"applied": 0}
+    results = []
+    first = True
+    for p in pending:
+        with _silent():
+            rep = apply_title(world_dir, player_id, p["title"],
+                              do_backup=first, show_on_name=True)
+        client.title_applied(p["id"])
+        results.append({"name": p["name"], "buffs": rep["applied"],
+                        "display": (rep.get("display") or {}).get("after"),
+                        "ignored": rep["ignored"]})
+        first = False
+    return {"applied": len(results), "titles": results}
 
 
 def travel_in(client: CentralClient, world_dir: str, player_id: str,

@@ -44,6 +44,20 @@ class CentralClient:
     def get_player(self, player_uid):
         return self._get(f"/v1/players/{player_uid}")
 
+    # ---- títulos ----
+    def grant_title(self, player_uid, title, server_id):
+        return self._post("/v1/titles/grant",
+                          {"player_uid": player_uid, "server_id": server_id, "title": title})
+
+    def pending_titles(self, player_uid):
+        return self._get(f"/v1/titles/{player_uid}/pending")
+
+    def title_applied(self, title_id):
+        return self._post(f"/v1/titles/{title_id}/applied", {})
+
+    def player_titles(self, player_uid):
+        return self._get(f"/v1/titles/{player_uid}")
+
     def servers(self):
         return self._get("/v1/servers")
 
