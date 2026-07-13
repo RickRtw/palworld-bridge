@@ -9,17 +9,35 @@ echo    PALWORLD GRID - SETUP AUTOMATICO DO FEUDO
 echo ============================================================
 echo.
 
-REM ---------- 1. Python ----------
-where python >nul 2>nul
-if errorlevel 1 (
-  echo [ERRO] Python nao encontrado.
-  echo   Instale Python 3.10+ em https://www.python.org/downloads/
-  echo   IMPORTANTE: marque "Add Python to PATH" durante a instalacao.
-  echo.
-  pause
-  exit /b 1
+REM ---------- 1. Python 3.12 (instala se faltar) ----------
+set "PY="
+where python >nul 2>nul && set "PY=python"
+REM ignora o alias "stub" da Microsoft Store (abre a loja e nao roda)
+if defined PY ( python -c "import sys" >nul 2>nul || set "PY=" )
+
+if not defined PY (
+  echo [..] Python nao encontrado. Instalando Python 3.12 automaticamente...
+  where winget >nul 2>nul
+  if not errorlevel 1 (
+    winget install -e --id Python.Python.3.12 --silent --accept-source-agreements --accept-package-agreements
+  ) else (
+    echo [..] winget indisponivel. Baixando o instalador oficial do Python...
+    powershell -NoProfile -Command "try { Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.12.8/python-3.12.8-amd64.exe' -OutFile '%TEMP%\python-3.12-amd64.exe' } catch { exit 1 }"
+    if errorlevel 1 ( echo [ERRO] Falha ao baixar o Python. Instale manual em python.org e rode de novo. & pause & exit /b 1 )
+    "%TEMP%\python-3.12-amd64.exe" /quiet InstallAllUsers=0 PrependPath=1 Include_test=0
+  )
+  REM o PATH nao atualiza na sessao atual: localiza o python recem-instalado
+  where python >nul 2>nul && set "PY=python"
+  if not defined PY if exist "%LOCALAPPDATA%\Programs\Python\Python312\python.exe" set "PY=%LOCALAPPDATA%\Programs\Python\Python312\python.exe"
+  if not defined PY if exist "%LOCALAPPDATA%\Programs\Python\Python313\python.exe" set "PY=%LOCALAPPDATA%\Programs\Python\Python313\python.exe"
+  if not defined PY (
+    echo [ERRO] Python foi instalado mas nao localizei o executavel.
+    echo   FECHE esta janela e rode o setup_feudo.bat de novo (o PATH ja estara atualizado).
+    pause
+    exit /b 1
+  )
 )
-echo [OK] Python encontrado.
+echo [OK] Python: %PY%
 
 REM ---------- 2. Git (necessario p/ o parser 1.0) ----------
 where git >nul 2>nul
@@ -73,7 +91,7 @@ REM ---------- 5. Ambiente + dependencias ----------
 echo.
 echo [..] Criando ambiente virtual e instalando dependencias...
 echo      (a primeira vez pode demorar alguns minutos)
-python -m venv .venv
+"%PY%" -m venv .venv
 call ".venv\Scripts\activate.bat"
 python -m pip install -q --upgrade pip
 python -m pip install -q -r requirements.txt
